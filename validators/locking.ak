@@ -119,9 +119,10 @@ validator params(
           // keeper and watcher update endpoint
           Update { value, flag } -> {
             // THIS CAUSES AN ERROR
-            let bank_addr =
-              credential.from_script(ref_datum.contracts.bank)
-              |> credential.with_delegation_script(ref_datum.contracts.stake)
+            // let bank_addr =
+            //   credential.from_script(ref_datum.contracts.bank)
+            //   |> credential.with_delegation_script(ref_datum.contracts.stake)
+            // The value going back to the contract
             let cont_value =
               if flag.increase == 0 {
                 value.add(validating_value, value.change)
@@ -142,7 +143,7 @@ validator params(
                 // make sure its the correct reference contract
                 ref_value_check,
                 // single script input from the bank script
-                address.count_script_inputs(tx.inputs, bank_addr, 0) == 1,
+                // address.count_script_inputs(tx.inputs, bank_addr, 0) == 1,
                 // single script input from this script
                 address.count_script_inputs(tx.inputs, script_addr, 0) == 1,
                 // single script output

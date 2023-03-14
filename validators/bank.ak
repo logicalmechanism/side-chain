@@ -30,6 +30,10 @@ validator params(
         let script_addr = validating_input.output.address
         when redeemer is {
           Withdraw { value } -> {
+            // THIS CAUSES AN ERROR
+            // let lock_addr =
+            //   credential.from_script(ref_datum.contracts.lock)
+            //   |> credential.with_delegation_script(ref_datum.contracts.stake)
             let cont_value =
               value.add(validating_value, value.negate(value.change))
             list.and(
@@ -43,6 +47,8 @@ validator params(
                 ),
                 // make sure its the correct reference contract
                 ref_value_check,
+                // single script input from the lock script
+                // address.count_script_inputs(tx.inputs, lock_addr, 0) == 1,
                 // single script input
                 address.count_script_inputs(tx.inputs, script_addr, 0) == 1,
                 // single script output
@@ -53,6 +59,10 @@ validator params(
             )
           }
           Deposit { value } -> {
+            // THIS CAUSES AN ERROR
+            // let lock_addr =
+            //   credential.from_script(ref_datum.contracts.lock)
+            //   |> credential.with_delegation_script(ref_datum.contracts.stake)
             let cont_value = value.add(validating_value, value.change)
             list.and(
               [
@@ -65,6 +75,8 @@ validator params(
                 ),
                 // make sure its the correct reference contract
                 ref_value_check,
+                // single script input from the lock script
+                // address.count_script_inputs(tx.inputs, lock_addr, 0) == 1,
                 // single script input
                 address.count_script_inputs(tx.inputs, script_addr, 0) == 1,
                 // single script output
