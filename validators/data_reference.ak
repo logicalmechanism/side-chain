@@ -4,8 +4,8 @@ use side_chain/address
 use side_chain/datum.{ReferenceDatum}
 use side_chain/helpers
 use side_chain/reference_redeemer.{
-  ReferenceRedeemer, UpdateCashier, UpdateFee, UpdateKeepers, UpdatePool,
-  UpdateWatchers,
+  ReferenceRedeemer, UpdateCashier, UpdateContracts, UpdateFee, UpdateKeepers,
+  UpdatePool, UpdateWatchers,
 }
 
 fn cont_validation(tx: Transaction, validating_input: Input) -> Bool {
@@ -45,6 +45,7 @@ validator data_reference {
                 datum.keepers == cont_datum.keepers,
                 datum.watchers == cont_datum.watchers,
                 datum.staking == cont_datum.staking,
+                datum.contracts == cont_datum.contracts,
               ],
             )
           // Update the service fee
@@ -55,6 +56,7 @@ validator data_reference {
                 datum.keepers == cont_datum.keepers,
                 datum.watchers == cont_datum.watchers,
                 datum.staking == cont_datum.staking,
+                datum.contracts == cont_datum.contracts,
               ],
             )
           // Update the multisig
@@ -67,6 +69,7 @@ validator data_reference {
                 datum.fees == cont_datum.fees,
                 datum.watchers == cont_datum.watchers,
                 datum.staking == cont_datum.staking,
+                datum.contracts == cont_datum.contracts,
                 keeper_length >= threshold,
                 // more than not
                 2 * threshold >= 2 + keeper_length,
@@ -83,6 +86,7 @@ validator data_reference {
                 datum.fees == cont_datum.fees,
                 datum.keepers == cont_datum.keepers,
                 datum.staking == cont_datum.staking,
+                datum.contracts == cont_datum.contracts,
                 watcher_length >= threshold,
                 // twice as many as not
                 2 * ( watcher_length - threshold ) <= threshold,
@@ -97,6 +101,18 @@ validator data_reference {
                 datum.fees == cont_datum.fees,
                 datum.keepers == cont_datum.keepers,
                 datum.watchers == cont_datum.watchers,
+                datum.contracts == cont_datum.contracts,
+              ],
+            )
+          // Update contract hash info
+          UpdateContracts ->
+            list.and(
+              [
+                datum.cashier == cont_datum.cashier,
+                datum.fees == cont_datum.fees,
+                datum.keepers == cont_datum.keepers,
+                datum.watchers == cont_datum.watchers,
+                datum.staking == cont_datum.staking,
               ],
             )
         }

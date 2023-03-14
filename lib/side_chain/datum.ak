@@ -36,12 +36,20 @@ pub type StakePoolData {
   reward_sc: PublicKeyHash,
 }
 
+// contract validator hashes
+pub type ContractHashData {
+  bank: ValidatorHash,
+  lock: ValidatorHash,
+  stake: ValidatorHash,
+}
+
 pub type ReferenceDatum {
   cashier: AddressData,
   fees: ServiceFeeData,
   keepers: KeeperData,
   watchers: WatcherData,
   staking: StakePoolData,
+  contracts: ContractHashData,
 }
 
 pub type LockDatum {
