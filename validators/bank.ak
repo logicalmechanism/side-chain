@@ -30,7 +30,7 @@ validator params(
         let script_addr = validating_input.output.address
         when redeemer is {
           Withdraw { value } -> {
-            // THIS CAUSES AN ERROR
+            // THIS LINE CAUSES AN ERROR
             // let lock_addr =
             //   credential.from_script(ref_datum.contracts.lock)
             //   |> credential.with_delegation_script(ref_datum.contracts.stake)
@@ -59,7 +59,7 @@ validator params(
             )
           }
           Deposit { value } -> {
-            // THIS CAUSES AN ERROR
+            // THIS LINE CAUSES AN ERROR
             // let lock_addr =
             //   credential.from_script(ref_datum.contracts.lock)
             //   |> credential.with_delegation_script(ref_datum.contracts.stake)

@@ -118,7 +118,7 @@ validator params(
           }
           // keeper and watcher update endpoint
           Update { value, flag } -> {
-            // THIS CAUSES AN ERROR
+            // THIS LINE CAUSES AN ERROR
             // let bank_addr =
             //   credential.from_script(ref_datum.contracts.bank)
             //   |> credential.with_delegation_script(ref_datum.contracts.stake)
