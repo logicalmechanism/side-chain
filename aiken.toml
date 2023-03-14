@@ -1,0 +1,14 @@
+name = "aiken-land/side_chain"
+version = "0.0.0"
+license = "Apache-2.0"
+description = "Aiken contracts for project 'aiken-land/side_chain'"
+
+[repository]
+user = "aiken-land"
+project = "side_chain"
+platform = "github"
+
+[[dependencies]]
+name = "aiken-lang/stdlib"
+version = "main"
+source = "github"
