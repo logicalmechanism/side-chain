@@ -74,9 +74,9 @@ validator params(
             let cont_value =
               value.add(validating_value, value.negate(outbound_value))
             // owner info
-            // let owner_addr =
-            //   credential.from_verification_key(datum.owner.pkh)
-            //   |> credential.with_delegation_key(datum.owner.sc)
+            let owner_addr =
+              credential.from_verification_key(datum.owner.pkh)
+              |> credential.with_delegation_key(datum.owner.sc)
             // fee info
             let cashier_addr =
               credential.from_verification_key(ref_datum.cashier.pkh)
@@ -105,12 +105,12 @@ validator params(
                 address.find_exact_payout(script_addr, cont_value, tx.outputs),
                 // pay the removal service fee
                 address.find_exact_payout(cashier_addr, service_fee, tx.outputs),
-                // THIS LINE CAUSES AN ERROR
-                // address.find_token_payout(
-                //   owner_addr,
-                //   outbound_value,
-                //   tx.outputs,
-                // ),
+                // owner with the withdrawn value
+                address.find_token_payout(
+                  owner_addr,
+                  outbound_value,
+                  tx.outputs,
+                ),
                 // ownership can not change
                 datum == cont_datum,
               ],
@@ -118,10 +118,9 @@ validator params(
           }
           // keeper and watcher update endpoint
           Update { value, flag } -> {
-            // THIS LINE CAUSES AN ERROR
-            // let bank_addr =
-            //   credential.from_script(ref_datum.contracts.bank)
-            //   |> credential.with_delegation_script(ref_datum.contracts.stake)
+            let bank_addr =
+              credential.from_script(ref_datum.contracts.bank)
+              |> credential.with_delegation_script(ref_datum.contracts.stake)
             // The value going back to the contract
             let cont_value =
               if flag.increase == 0 {
@@ -143,7 +142,7 @@ validator params(
                 // make sure its the correct reference contract
                 ref_value_check,
                 // single script input from the bank script
-                // address.count_script_inputs(tx.inputs, bank_addr, 0) == 1,
+                address.count_script_inputs(tx.inputs, bank_addr, 0) == 1,
                 // single script input from this script
                 address.count_script_inputs(tx.inputs, script_addr, 0) == 1,
                 // single script output
