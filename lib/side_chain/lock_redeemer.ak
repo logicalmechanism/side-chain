@@ -14,5 +14,6 @@ pub type Remove =
 pub type LockRedeemer {
   Remove
   Withdraw { value: ValueData }
+  Deposit { value: ValueData }
   Update { value: ValueData, flag: FlagData }
 }

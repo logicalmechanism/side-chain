@@ -14,7 +14,8 @@ pub type AddressData {
 
 // side chain fee info
 pub type ServiceFeeData {
-  service_fee: Int,
+  withdraw_fee: Int,
+  deposit_fee: Int,
 }
 
 // keepers are like admins
