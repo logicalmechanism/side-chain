@@ -82,6 +82,8 @@ validator params(
               credential.from_verification_key(ref_datum.cashier.pkh)
               |> credential.with_delegation_key(ref_datum.cashier.sc)
             let service_fee = value.from_lovelace(ref_datum.fees.service_fee)
+            expect cont_datum: LockDatum =
+              helpers.get_outbound_datum(tx, validating_input)
             list.and(
               [
                 // keepers or watchers must sign it
@@ -91,6 +93,8 @@ validator params(
                     helpers.valid_multisig(tx, ref_datum.watchers.pkhs, 0) >= ref_datum.watchers.threshold,
                   ],
                 ),
+                // owner must sign it
+                helpers.must_be_signed_by(tx, datum.owner.pkh),
                 // make sure its the correct reference contract
                 ref_value_check,
                 // single script input
@@ -101,25 +105,31 @@ validator params(
                 address.find_exact_payout(script_addr, cont_value, tx.outputs),
                 // pay the removal service fee
                 address.find_exact_payout(cashier_addr, service_fee, tx.outputs),
-                // THIS LINE CAUSES AN ERROR
+                // owner with the withdrawn value
                 address.find_token_payout(
                   owner_addr,
                   outbound_value,
                   tx.outputs,
                 ),
-                // this is to prevent comment remove
-                True,
+                // ownership can not change
+                datum == cont_datum,
               ],
             )
           }
           // keeper and watcher update endpoint
           Update { value, flag } -> {
+            let bank_addr =
+              credential.from_script(ref_datum.contracts.bank)
+              |> credential.with_delegation_script(ref_datum.contracts.stake)
+            // The value going back to the contract
             let cont_value =
               if flag.increase == 0 {
                 value.add(validating_value, value.change)
               } else {
                 value.add(validating_value, value.negate(value.change))
               }
+            expect cont_datum: LockDatum =
+              helpers.get_outbound_datum(tx, validating_input)
             list.and(
               [
                 // keepers or watchers must sign it
@@ -131,12 +141,16 @@ validator params(
                 ),
                 // make sure its the correct reference contract
                 ref_value_check,
-                // single script input
+                // single script input from the bank script
+                address.count_script_inputs(tx.inputs, bank_addr, 0) == 1,
+                // single script input from this script
                 address.count_script_inputs(tx.inputs, script_addr, 0) == 1,
                 // single script output
                 address.count_script_outputs(tx.outputs, script_addr, 0) == 1,
                 // make sure value is continuing
                 address.find_exact_payout(script_addr, cont_value, tx.outputs),
+                // ownership can not change
+                datum == cont_datum,
               ],
             )
           }

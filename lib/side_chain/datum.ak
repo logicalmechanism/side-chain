@@ -1,6 +1,5 @@
 use aiken/hash.{Blake2b_224, Hash}
 use aiken/transaction/credential.{PoolId, Script, VerificationKey}
-use aiken/transaction/value.{AssetName, PolicyId}
 
 pub type PublicKeyHash =
   Hash<Blake2b_224, VerificationKey>
@@ -11,12 +10,6 @@ pub type ValidatorHash =
 pub type AddressData {
   pkh: PublicKeyHash,
   sc: PublicKeyHash,
-}
-
-pub type PaymentData {
-  pid: PolicyId,
-  tkn: AssetName,
-  amt: Int,
 }
 
 // side chain fee info
@@ -43,12 +36,20 @@ pub type StakePoolData {
   reward_sc: PublicKeyHash,
 }
 
+// contract validator hashes
+pub type ContractHashData {
+  bank: ValidatorHash,
+  lock: ValidatorHash,
+  stake: ValidatorHash,
+}
+
 pub type ReferenceDatum {
   cashier: AddressData,
   fees: ServiceFeeData,
   keepers: KeeperData,
   watchers: WatcherData,
   staking: StakePoolData,
+  contracts: ContractHashData,
 }
 
 pub type LockDatum {

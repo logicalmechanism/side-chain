@@ -13,10 +13,14 @@ pub type UpdateWatchers =
 pub type UpdatePool =
   Void
 
+pub type UpdateContracts =
+  Void
+
 pub type ReferenceRedeemer {
   UpdateCashier
   UpdateFee
   UpdateKeepers
   UpdateWatchers
   UpdatePool
+  UpdateContracts
 }
