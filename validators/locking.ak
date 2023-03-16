@@ -18,6 +18,8 @@ validator params(
     let ref_addr = credential.from_script(ref_hash)
     let tx = context.transaction
     let ref_input = address.find_script_input(tx.reference_inputs, ref_addr)
+    // THIS IS CAUSING AN ERROR
+    let _starter_token = value.from_asset(starter_pid, starter_tkn, 1)
     let ref_value_check =
       value.quantity_of(ref_input.output.value, starter_pid, starter_tkn) == 1
     expect ref_datum: ReferenceDatum = data.find_inbound_datum(ref_input)
@@ -74,7 +76,9 @@ validator params(
           }
           // take some a specific value from the lock contract
           Withdraw { value } -> {
-            let outbound_value = value.change
+            // let outbound_value = value.change
+            // THIS LINE CAUSES ERROR
+            let outbound_value = value.from_asset(#"", #"", 1)
             let cont_value =
               value.add(validating_value, value.negate(outbound_value))
             // owner info
