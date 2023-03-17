@@ -14,20 +14,28 @@ validator params(
   ref_hash_data: Data,
 ) {
   fn(datum: LockDatum, redeemer: LockRedeemer, context: ScriptContext) -> Bool {
-    expect ref_hash: ByteArray = ref_hash_data
-    let ref_addr = credential.from_script(ref_hash)
-    let tx = context.transaction
-    let ref_input = address.find_script_input(tx.reference_inputs, ref_addr)
+    expect ref_hash: ByteArray =
+      ref_hash_data
+    let ref_addr =
+      credential.from_script(ref_hash)
+    let tx =
+      context.transaction
+    let ref_input =
+      address.find_script_input(tx.reference_inputs, ref_addr)
+    // THIS IS CAUSING AN ERROR
     let ref_value_check =
       value.quantity_of(ref_input.output.value, starter_pid, starter_tkn) == 1
-    expect ref_datum: ReferenceDatum = data.find_inbound_datum(ref_input)
+    expect ref_datum: ReferenceDatum =
+      data.find_inbound_datum(ref_input)
     when context.purpose is {
       Spend(output_reference) -> {
         // used by both redeemers
         let validating_input =
           helpers.get_validating_input(tx.inputs, output_reference)
-        let validating_value = validating_input.output.value
-        let script_addr = validating_input.output.address
+        let validating_value =
+          validating_input.output.value
+        let script_addr =
+          validating_input.output.address
         when redeemer is {
           // Remove the the funds from the L1 locking contract
           Remove -> {
@@ -39,7 +47,8 @@ validator params(
             let cashier_addr =
               credential.from_verification_key(ref_datum.cashier.pkh)
                 |> credential.with_delegation_key(ref_datum.cashier.sc)
-            let withdraw_fee = value.from_lovelace(ref_datum.fees.withdraw_fee)
+            let withdraw_fee =
+              value.from_lovelace(ref_datum.fees.withdraw_fee)
             list.and(
               [
                 // keepers or watchers must sign it
@@ -74,7 +83,8 @@ validator params(
           }
           // take some a specific value from the lock contract
           Withdraw { value } -> {
-            let outbound_value = value.change
+            let outbound_value =
+              value.change
             let cont_value =
               value.add(validating_value, value.negate(outbound_value))
             // owner info
@@ -85,7 +95,8 @@ validator params(
             let cashier_addr =
               credential.from_verification_key(ref_datum.cashier.pkh)
                 |> credential.with_delegation_key(ref_datum.cashier.sc)
-            let withdraw_fee = value.from_lovelace(ref_datum.fees.withdraw_fee)
+            let withdraw_fee =
+              value.from_lovelace(ref_datum.fees.withdraw_fee)
             expect cont_datum: LockDatum =
               helpers.get_outbound_datum(tx, validating_input)
             list.and(
@@ -126,13 +137,16 @@ validator params(
           }
           // Deposit more value onto the lock contract
           Deposit { value } -> {
-            let outbound_value = value.change
-            let cont_value = value.add(validating_value, outbound_value)
+            let outbound_value =
+              value.change
+            let cont_value =
+              value.add(validating_value, outbound_value)
             // fee info
             let cashier_addr =
               credential.from_verification_key(ref_datum.cashier.pkh)
                 |> credential.with_delegation_key(ref_datum.cashier.sc)
-            let deposit_fee = value.from_lovelace(ref_datum.fees.deposit_fee)
+            let deposit_fee =
+              value.from_lovelace(ref_datum.fees.deposit_fee)
             expect cont_datum: LockDatum =
               helpers.get_outbound_datum(tx, validating_input)
             list.and(
@@ -202,7 +216,8 @@ validator params(
         }
       }
       // anything else fails
-      _ -> False
+      _ ->
+        False
     }
   }
 }
