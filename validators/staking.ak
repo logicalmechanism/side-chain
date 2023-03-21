@@ -18,27 +18,30 @@ type WithdrawRedeemer {
   Delegate(StakeData)
 }
 
-validator params(
-  starter_pid: ByteArray,
-  starter_tkn: ByteArray,
-  ref_hash_data: Data,
-) {
-  fn(redeemer: WithdrawRedeemer, context: ScriptContext) -> Bool {
-    expect ref_hash: ByteArray = ref_hash_data
-    let ref_addr = credential.from_script(ref_hash)
-    let tx = context.transaction
-    let ref_input = address.find_script_input(tx.reference_inputs, ref_addr)
+validator(starter_pid: ByteArray, starter_tkn: ByteArray, ref_hash_data: Data) {
+  fn params(redeemer: WithdrawRedeemer, context: ScriptContext) -> Bool {
+    expect ref_hash: ByteArray =
+      ref_hash_data
+    let ref_addr =
+      credential.from_script(ref_hash)
+    let tx =
+      context.transaction
+    let ref_input =
+      address.find_script_input(tx.reference_inputs, ref_addr)
     let ref_value_check =
       value.quantity_of(ref_input.output.value, starter_pid, starter_tkn) == 1
-    expect ref_datum: ReferenceDatum = data.find_inbound_datum(ref_input)
+    expect ref_datum: ReferenceDatum =
+      data.find_inbound_datum(ref_input)
     when context.purpose is {
       // handle all withdrawals
       WithdrawFrom(stake_credential) -> {
         let reward_addr =
           credential.from_verification_key(ref_datum.staking.reward_pkh)
-          |> credential.with_delegation_key(ref_datum.staking.reward_sc)
-        let withdraws = tx.withdrawals
-        let reward = helpers.get_reward_amt(withdraws, stake_credential)
+            |> credential.with_delegation_key(ref_datum.staking.reward_sc)
+        let withdraws =
+          tx.withdrawals
+        let reward =
+          helpers.get_reward_amt(withdraws, stake_credential)
         when redeemer is {
           Withdraw ->
             list.and(
@@ -51,15 +54,18 @@ validator params(
                 ),
               ],
             )
-          _ -> False
+          _ ->
+            False
         }
       }
       // handle all delegation certs
       Publish(certificate) -> {
-        let pool_id = ref_datum.staking.pool_id
+        let pool_id =
+          ref_datum.staking.pool_id
         when redeemer is {
           Delegate(sd) -> {
-            let stake_credential = Inline(ScriptCredential(sd.stake_cred))
+            let stake_credential =
+              Inline(ScriptCredential(sd.stake_cred))
             let new_delegation =
               CredentialDelegation {
                 delegator: stake_credential,
@@ -67,10 +73,12 @@ validator params(
               }
             list.and([ref_value_check, certificate == new_delegation])
           }
-          _ -> False
+          _ ->
+            False
         }
       }
-      _ -> False
+      _ ->
+        False
     }
   }
 }
