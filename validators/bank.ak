@@ -8,31 +8,38 @@ use side_chain/data
 use side_chain/datum.{ReferenceDatum}
 use side_chain/helpers
 
-validator params(
-  starter_pid: ByteArray,
-  starter_tkn: ByteArray,
-  ref_hash_data: Data,
-) {
-  fn(_datum: Void, redeemer: BankRedeemer, context: ScriptContext) -> Bool {
-    expect ref_hash: ByteArray = ref_hash_data
-    let ref_addr = credential.from_script(ref_hash)
-    let tx = context.transaction
-    let ref_input = address.find_script_input(tx.reference_inputs, ref_addr)
+validator(starter_pid: ByteArray, starter_tkn: ByteArray, ref_hash_data: Data) {
+  fn params(
+    _datum: Void,
+    redeemer: BankRedeemer,
+    context: ScriptContext,
+  ) -> Bool {
+    expect ref_hash: ByteArray =
+      ref_hash_data
+    let ref_addr =
+      credential.from_script(ref_hash)
+    let tx =
+      context.transaction
+    let ref_input =
+      address.find_script_input(tx.reference_inputs, ref_addr)
     let ref_value_check =
       value.quantity_of(ref_input.output.value, starter_pid, starter_tkn) == 1
-    expect ref_datum: ReferenceDatum = data.find_inbound_datum(ref_input)
+    expect ref_datum: ReferenceDatum =
+      data.find_inbound_datum(ref_input)
     when context.purpose is {
       Spend(output_reference) -> {
         // used by both redeemers
         let validating_input =
           helpers.get_validating_input(tx.inputs, output_reference)
-        let validating_value = validating_input.output.value
-        let script_addr = validating_input.output.address
+        let validating_value =
+          validating_input.output.value
+        let script_addr =
+          validating_input.output.address
         when redeemer is {
           Withdraw { value } -> {
             let lock_addr =
               credential.from_script(ref_datum.contracts.lock)
-              |> credential.with_delegation_script(ref_datum.contracts.stake)
+                |> credential.with_delegation_script(ref_datum.contracts.stake)
             let cont_value =
               value.add(validating_value, value.negate(value.change))
             list.and(
@@ -61,8 +68,9 @@ validator params(
             // THIS LINE CAUSES AN ERROR
             let lock_addr =
               credential.from_script(ref_datum.contracts.lock)
-              |> credential.with_delegation_script(ref_datum.contracts.stake)
-            let cont_value = value.add(validating_value, value.change)
+                |> credential.with_delegation_script(ref_datum.contracts.stake)
+            let cont_value =
+              value.add(validating_value, value.change)
             list.and(
               [
                 // keepers or watchers must sign it
@@ -86,11 +94,14 @@ validator params(
             )
           }
           Combine { utxo } -> {
-            let other_output_reference = bank_redeemer.utxo_to_out_ref(utxo)
+            let other_output_reference =
+              bank_redeemer.utxo_to_out_ref(utxo)
             let other_validating_input =
               helpers.get_validating_input(tx.inputs, other_output_reference)
-            let other_validating_value = other_validating_input.output.value
-            let cont_value = value.add(validating_value, other_validating_value)
+            let other_validating_value =
+              other_validating_input.output.value
+            let cont_value =
+              value.add(validating_value, other_validating_value)
             list.and(
               [
                 // keepers or watchers must sign it
@@ -115,7 +126,8 @@ validator params(
           }
         }
       }
-      _ -> False
+      _ ->
+        False
     }
   }
 }

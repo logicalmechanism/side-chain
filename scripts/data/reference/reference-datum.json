@@ -1,0 +1,87 @@
+{
+  "constructor": 0,
+  "fields": [
+    {
+      "constructor": 0,
+      "fields": [
+        {
+          "bytes": ""
+        },
+        {
+          "bytes": ""
+        }
+      ]
+    },
+    {
+      "constructor": 0,
+      "fields": [
+        {
+          "int": 2000000
+        },
+        {
+          "int": 2000000
+        }
+      ]
+    },
+    {
+      "constructor": 0,
+      "fields": [
+        {
+          "list": [
+            {
+              "bytes": ""
+            },
+            {
+              "bytes": ""
+            },
+            {
+              "bytes": ""
+            }
+          ]
+        },
+        {
+          "int": 2
+        }
+      ]
+    },
+    {
+      "constructor": 0,
+      "fields": [
+        {
+          "list": []
+        },
+        {
+          "int": 1
+        }
+      ]
+    },
+    {
+      "constructor": 0,
+      "fields": [
+        {
+          "bytes": "bd66ac291ac521deaf22141fb0e5e2f0ed3da63159b9f49e1f500acf"
+        },
+        {
+          "bytes": ""
+        },
+        {
+          "bytes": ""
+        }
+      ]
+    },
+    {
+      "constructor": 0,
+      "fields": [
+        {
+          "bytes": "1971c64c46504e7e157985d370dc9404b81f7893b6130aba93f85c80"
+        },
+        {
+          "bytes": "65a398b72d01f7e6a119455ab7e42f54200d60258b7a74ea5217e0fa"
+        },
+        {
+          "bytes": "1a7d390cace014b721c87b9a5d931d430e39997bfaa96197f877eebd"
+        }
+      ]
+    }
+  ]
+}

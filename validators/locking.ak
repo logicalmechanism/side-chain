@@ -8,12 +8,12 @@ use side_chain/datum.{LockDatum, ReferenceDatum}
 use side_chain/helpers
 use side_chain/lock_redeemer.{Deposit, LockRedeemer, Remove, Update, Withdraw}
 
-validator params(
-  starter_pid: ByteArray,
-  starter_tkn: ByteArray,
-  ref_hash_data: Data,
-) {
-  fn(datum: LockDatum, redeemer: LockRedeemer, context: ScriptContext) -> Bool {
+validator(starter_pid: ByteArray, starter_tkn: ByteArray, ref_hash_data: Data) {
+  fn params(
+    datum: LockDatum,
+    redeemer: LockRedeemer,
+    context: ScriptContext,
+  ) -> Bool {
     expect ref_hash: ByteArray =
       ref_hash_data
     let ref_addr =
