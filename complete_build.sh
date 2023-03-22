@@ -10,9 +10,11 @@ function cat_file_or_empty() {
 }
 
 # build out the entire script
+echo -e "\033[1;34m Building Contracts \033[0m"
 aiken build
 
 # start with data reference
+echo -e "\033[1;33m Convert Reference Contract \033[0m"
 aiken blueprint convert -v data_reference.data_reference > contracts/reference_contract.plutus
 cardano-cli transaction policyid --script-file contracts/reference_contract.plutus > hashes/reference_contract.hash
 
@@ -32,6 +34,7 @@ tkn_cbor=$(python ./convert_to_cbor.py ${tkn})
 poolId=$(jq -r '.poolId' start_info.json)
 
 # build the stake contract
+echo -e "\033[1;33m Convert Stake Contract \033[0m"
 aiken blueprint apply --validator staking.params . "(con data #${pid_cbor})"
 aiken blueprint apply --validator staking.params . "(con data #${tkn_cbor})"
 aiken blueprint apply --validator staking.params . "(con data #${ref_cbor})"
@@ -41,6 +44,7 @@ cardano-cli stake-address registration-certificate --stake-script-file contracts
 cardano-cli stake-address delegation-certificate --stake-script-file contracts/stake_contract.plutus --stake-pool-id ${poolId} --out-file certs/deleg.cert
 
 # build the bank contract
+echo -e "\033[1;33m Convert Bank Contract \033[0m"
 aiken blueprint apply --validator bank.params . "(con data #${pid_cbor})"
 aiken blueprint apply --validator bank.params . "(con data #${tkn_cbor})"
 aiken blueprint apply --validator bank.params . "(con data #${ref_cbor})"
@@ -48,6 +52,7 @@ aiken blueprint convert -v bank.params > contracts/bank_contract.plutus
 cardano-cli transaction policyid --script-file contracts/bank_contract.plutus > hashes/bank.hash
 
 # build the minter contract
+echo -e "\033[1;33m Convert Minter Contract \033[0m"
 aiken blueprint apply --validator controlled_minter.params . "(con data #${pid_cbor})"
 aiken blueprint apply --validator controlled_minter.params . "(con data #${tkn_cbor})"
 aiken blueprint apply --validator controlled_minter.params . "(con data #${ref_cbor})"
@@ -55,6 +60,7 @@ aiken blueprint convert -v controlled_minter.params > contracts/controlled_minte
 cardano-cli transaction policyid --script-file contracts/controlled_minter_contract.plutus > hashes/policy.hash
 
 #build the lock contract
+echo -e "\033[1;33m Convert Locking Contract \033[0m"
 aiken blueprint apply --validator locking.params . "(con data #${pid_cbor})"
 aiken blueprint apply --validator locking.params . "(con data #${tkn_cbor})"
 aiken blueprint apply --validator locking.params . "(con data #${ref_cbor})"
@@ -62,7 +68,7 @@ aiken blueprint convert -v locking.params > contracts/locking_contract.plutus
 cardano-cli transaction policyid --script-file contracts/locking_contract.plutus > hashes/locking.hash
 
 ###############DATUM AND REDEEMER STUFF
-
+echo -e "\033[1;33m Updating Reference Datum \033[0m"
 # # build out the reference datum data
 caPkh=$(cat_file_or_empty ./scripts/wallets/cashier-wallet/payment.hash)
 caSc=$(cat_file_or_empty ./scripts/wallets/cashier-wallet/stake.hash)
@@ -112,6 +118,7 @@ jq \
 ./scripts/data/reference/reference-datum.json | sponge ./scripts/data/reference/reference-datum.json
 
 # Update Staking Redeemer
+echo -e "\033[1;33m Updating Stake Redeemer \033[0m"
 stakeHash=$(cat_file_or_empty ./hashes/stake.hash)
 jq \
 --arg stakeHash "$stakeHash" \

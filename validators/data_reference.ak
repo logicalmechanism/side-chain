@@ -16,11 +16,11 @@ fn cont_validation(tx: Transaction, validating_input: Input) -> Bool {
   list.and(
     [
       // owner must get the utxo back
-      address.find_exact_payout(script_addr, validating_value, tx.outputs)?,
+      address.find_token_payout(script_addr, validating_value, tx.outputs),
       // single script input
-      (address.count_script_inputs(tx.inputs, script_addr, 0) == 1)?,
+      address.count_script_inputs(tx.inputs, script_addr, 0) == 1,
       // single script output
-      (address.count_script_outputs(tx.outputs, script_addr, 0) == 1)?,
+      address.count_script_outputs(tx.outputs, script_addr, 0) == 1,
     ],
   )
 }
@@ -126,9 +126,11 @@ validator {
           }
         list.and(
           [
+            // validating value conts to script addr
             cont_validation(tx, validating_input),
             // only keepers can update the data
             helpers.valid_multisig(tx, datum.keepers.pkhs, 0) >= datum.keepers.threshold,
+            // the cont datum check
             datum_cont_check,
           ],
         )
