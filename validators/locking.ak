@@ -40,12 +40,13 @@ validator(starter_pid: ByteArray, starter_tkn: ByteArray, ref_hash_data: Data) {
           Remove -> {
             // owner info
             let owner_addr =
-              credential.from_verification_key(datum.owner.pkh)
-                |> credential.with_delegation_key(datum.owner.sc)
+              address.create_wallet_address(datum.owner.pkh, datum.owner.sc)
             // fee info
             let cashier_addr =
-              credential.from_verification_key(ref_datum.cashier.pkh)
-                |> credential.with_delegation_key(ref_datum.cashier.sc)
+              address.create_wallet_address(
+                ref_datum.cashier.pkh,
+                ref_datum.cashier.sc,
+              )
             let withdraw_fee =
               value.from_lovelace(ref_datum.fees.withdraw_fee)
             list.and(
@@ -88,12 +89,13 @@ validator(starter_pid: ByteArray, starter_tkn: ByteArray, ref_hash_data: Data) {
               value.add(validating_value, value.negate(outbound_value))
             // owner info
             let owner_addr =
-              credential.from_verification_key(datum.owner.pkh)
-                |> credential.with_delegation_key(datum.owner.sc)
+              address.create_wallet_address(datum.owner.pkh, datum.owner.sc)
             // fee info
             let cashier_addr =
-              credential.from_verification_key(ref_datum.cashier.pkh)
-                |> credential.with_delegation_key(ref_datum.cashier.sc)
+              address.create_wallet_address(
+                ref_datum.cashier.pkh,
+                ref_datum.cashier.sc,
+              )
             let withdraw_fee =
               value.from_lovelace(ref_datum.fees.withdraw_fee)
             expect cont_datum: LockDatum =
@@ -142,8 +144,10 @@ validator(starter_pid: ByteArray, starter_tkn: ByteArray, ref_hash_data: Data) {
               value.add(validating_value, outbound_value)
             // fee info
             let cashier_addr =
-              credential.from_verification_key(ref_datum.cashier.pkh)
-                |> credential.with_delegation_key(ref_datum.cashier.sc)
+              address.create_wallet_address(
+                ref_datum.cashier.pkh,
+                ref_datum.cashier.sc,
+              )
             let deposit_fee =
               value.from_lovelace(ref_datum.fees.deposit_fee)
             expect cont_datum: LockDatum =
@@ -177,8 +181,10 @@ validator(starter_pid: ByteArray, starter_tkn: ByteArray, ref_hash_data: Data) {
           // keeper and watcher update endpoint
           Update { value, flag } -> {
             let bank_addr =
-              credential.from_script(ref_datum.contracts.bank)
-                |> credential.with_delegation_script(ref_datum.contracts.stake)
+              address.create_script_address(
+                ref_datum.contracts.bank,
+                ref_datum.contracts.stake,
+              )
             // The value going back to the contract
             let cont_value =
               if flag.increase == 0 {

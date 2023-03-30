@@ -142,3 +142,23 @@ fn check_all_assets(
       True
   }
 }
+
+pub fn create_wallet_address(pkh: ByteArray, sc: ByteArray) -> Address {
+  // empty bytearrays means dont add the sc to the pkh
+  if sc == #"" {
+    credential.from_verification_key(pkh)
+  } else {
+    credential.from_verification_key(pkh)
+      |> credential.with_delegation_key(sc)
+  }
+}
+
+pub fn create_script_address(pkh: ByteArray, sc: ByteArray) -> Address {
+  // empty bytearrays means dont add the sc to the pkh
+  if sc == #"" {
+    credential.from_script(pkh)
+  } else {
+    credential.from_script(pkh)
+      |> credential.with_delegation_script(sc)
+  }
+}
