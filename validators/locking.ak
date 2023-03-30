@@ -22,7 +22,6 @@ validator(starter_pid: ByteArray, starter_tkn: ByteArray, ref_hash_data: Data) {
       context.transaction
     let ref_input =
       address.find_script_input(tx.reference_inputs, ref_addr)
-    // THIS IS CAUSING AN ERROR
     let ref_value_check =
       value.quantity_of(ref_input.output.value, starter_pid, starter_tkn) == 1
     expect ref_datum: ReferenceDatum =

@@ -76,9 +76,9 @@ caSc=$(cat_file_or_empty ./scripts/wallets/cashier-wallet/stake.hash)
 withdrawFee=2000000
 depositFee=2000000
 # keepers
-pkh1=$(cat_file_or_empty ./scripts/wallets/multisig1-wallet/payment.hash)
-pkh2=$(cat_file_or_empty ./scripts/wallets/multisig2-wallet/payment.hash)
-pkh3=$(cat_file_or_empty ./scripts/wallets/multisig3-wallet/payment.hash)
+pkh1=$(cat_file_or_empty ./scripts/wallets/keeper1-wallet/payment.hash)
+pkh2=$(cat_file_or_empty ./scripts/wallets/keeper2-wallet/payment.hash)
+pkh3=$(cat_file_or_empty ./scripts/wallets/keeper3-wallet/payment.hash)
 pkhs="[{\"bytes\": \"$pkh1\"}, {\"bytes\": \"$pkh2\"}, {\"bytes\": \"$pkh3\"}]"
 thres=2
 # pool stuff

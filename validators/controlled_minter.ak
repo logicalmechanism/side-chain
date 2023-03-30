@@ -52,7 +52,7 @@ fn correct_mint(mint: Value, pid: PolicyId, tkn: AssetName) -> Bool {
 }
 
 validator(starter_pid: ByteArray, starter_tkn: ByteArray, ref_hash_data: Data) {
-  fn params(_datum: Void, _redeemer: Void, context: ScriptContext) -> Bool {
+  fn params(_redeemer: Void, context: ScriptContext) -> Bool {
     let tx =
       context.transaction
     // select the first tx hash from the input list
