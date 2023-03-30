@@ -30,7 +30,12 @@ keeper3_pkh=$(${cli} address key-hash --payment-verification-key-file ../wallets
 # asset to trade
 policy_id="c34332d539bb554707a2d8826f2057bc628ac433a779c2f43d4a5b5c"
 token_name="5468697349734f6e6553746172746572546f6b656e466f7254657374696e6731"
-asset="200 ${policy_id}.${token_name}"
+asset="100 ${policy_id}.${token_name}"
+
+user_min_value=$(${cli} transaction calculate-min-required-utxo \
+    --babbage-era \
+    --protocol-params-file ../tmp/protocol.json \
+    --tx-out="${user_address} + 5000000 + ${asset}" | tr -dc '0-9')
 
 min_value=$(${cli} transaction calculate-min-required-utxo \
     --babbage-era \
@@ -38,8 +43,10 @@ min_value=$(${cli} transaction calculate-min-required-utxo \
     --tx-out-inline-datum-file ../data/locking/locking-datum.json \
     --tx-out="${script_address} + 5000000 + ${asset}" | tr -dc '0-9')
 
-user_address_out="${user_address} + ${min_value} + ${asset}"
+script_address_out="${script_address} + ${min_value} + ${asset}"
+user_address_out="${user_address} + ${user_min_value} + ${asset}"
 fee_address_out="${cashier_address} + ${withdraw_fee}"
+echo "Script OUTPUT: "${script_address_out}
 echo "User OUTPUT: "${user_address_out}
 echo "Fee OUTPUT: "${fee_address_out}
 #
@@ -108,7 +115,9 @@ FEE=$(${cli} transaction build \
     --spending-tx-in-reference="${script_ref_utxo}#1" \
     --spending-plutus-script-v2 \
     --spending-reference-tx-in-inline-datum-present \
-    --spending-reference-tx-in-redeemer-file ../data/locking/remove-redeemer.json \
+    --spending-reference-tx-in-redeemer-file ../data/locking/withdraw-redeemer.json \
+    --tx-out="${script_address_out}" \
+    --tx-out-inline-datum-file ../data/locking/locking-datum.json \
     --tx-out="${user_address_out}" \
     --tx-out="${fee_address_out}" \
     --required-signer-hash ${user_pkh} \
@@ -123,7 +132,7 @@ IFS=' ' read -ra FEE <<< "${VALUE[1]}"
 FEE=${FEE[1]}
 echo -e "\033[1;32m Fee: \033[0m" $FEE
 #
-exit
+# exit
 #
 echo -e "\033[0;36m Signing \033[0m"
 ${cli} transaction sign \
