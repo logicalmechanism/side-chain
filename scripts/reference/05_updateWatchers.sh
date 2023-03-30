@@ -13,12 +13,11 @@ script_address=$(${cli} address build --payment-script-file ${script_path} --tes
 collat_address=$(cat ../wallets/collat-wallet/payment.addr)
 collat_pkh=$(${cli} address key-hash --payment-verification-key-file ../wallets/collat-wallet/payment.vkey)
 
-# deleg
+# starter
 starter_address=$(cat ../wallets/starter-wallet/payment.addr)
 starter_pkh=$(${cli} address key-hash --payment-verification-key-file ../wallets/starter-wallet/payment.vkey)
 
-# search by cashier
-cashier_pkh=$(${cli} address key-hash --payment-verification-key-file ../wallets/cashier-wallet/payment.vkey)
+
 
 # multisig
 keeper1_pkh=$(${cli} address key-hash --payment-verification-key-file ../wallets/keeper1-wallet/payment.vkey)

@@ -54,30 +54,30 @@ validator(starter_pid: ByteArray, starter_tkn: ByteArray, ref_hash_data: Data) {
                 // keepers or watchers must sign it
                 list.or(
                   [
-                    helpers.valid_multisig(tx, ref_datum.keepers.pkhs, 0) >= ref_datum.keepers.threshold,
-                    helpers.valid_multisig(tx, ref_datum.watchers.pkhs, 0) >= ref_datum.watchers.threshold,
+                    (helpers.valid_multisig(tx, ref_datum.keepers.pkhs, 0) >= ref_datum.keepers.threshold)?,
+                    (helpers.valid_multisig(tx, ref_datum.watchers.pkhs, 0) >= ref_datum.watchers.threshold)?,
                   ],
                 ),
                 // owner must sign it
-                helpers.must_be_signed_by(tx, datum.owner.pkh),
+                helpers.must_be_signed_by(tx, datum.owner.pkh)?,
                 // owner must get the utxo back
                 address.find_exact_payout(
                   owner_addr,
                   validating_value,
                   tx.outputs,
-                ),
+                )?,
                 // make sure its the correct reference contract
                 ref_value_check,
                 // single script input
-                address.count_script_inputs(tx.inputs, script_addr, 0) == 1,
+                (address.count_script_inputs(tx.inputs, script_addr, 0) == 1)?,
                 // single script output
-                address.count_script_outputs(tx.outputs, script_addr, 0) == 0,
+                (address.count_script_outputs(tx.outputs, script_addr, 0) == 0)?,
                 // pay the removal service fee
                 address.find_exact_payout(
                   cashier_addr,
                   withdraw_fee,
                   tx.outputs,
-                ),
+                )?,
               ],
             )
           }
