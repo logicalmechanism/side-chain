@@ -20,7 +20,13 @@ policy_id=$(jq -r '.starterPid' ../../start_info.json)
 token_name=$(jq -r '.starterTkn' ../../start_info.json)
 asset="1 ${policy_id}.${token_name}"
 
-script_address_out="${script_address} + 5000000 + ${asset}"
+min_value=$(${cli} transaction calculate-min-required-utxo \
+    --babbage-era \
+    --protocol-params-file ../tmp/protocol.json \
+    --tx-out-inline-datum-file ../data/reference/reference-datum.json \
+    --tx-out="${script_address} + 5000000 + ${asset}" | tr -dc '0-9')
+
+script_address_out="${script_address} + ${min_value} + ${asset}"
 echo "Script OUTPUT: "${script_address_out}
 #
 # exit
@@ -39,7 +45,7 @@ if [ "${TXNS}" -eq "0" ]; then
    exit;
 fi
 alltxin=""
-TXIN=$(jq -r --arg alltxin "" --arg policy_id "$policy_id" --arg name "$token_name" 'to_entries[] | select((.value.value | length < 2) or .value.value[$policy_id][$token_name] == 1) | .key | . + $alltxin + " --tx-in"' ../tmp/starter_utxo.json)
+TXIN=$(jq -r --arg alltxin "" --arg policy_id "$policy_id" --arg token_name "$token_name" 'to_entries[] | select((.value.value | length < 2) or .value.value[$policy_id][$token_name] == 1) | .key | . + $alltxin + " --tx-in"' ../tmp/starter_utxo.json)
 starter_tx_in=${TXIN::-8}
 
 echo -e "\033[0;36m Building Tx \033[0m"
@@ -50,7 +56,7 @@ FEE=$(${cli} transaction build \
     --change-address ${starter_address} \
     --tx-in ${starter_tx_in} \
     --tx-out="${script_address_out}" \
-    --tx-out-inline-datum-file ../data/referencing/reference-datum.json \
+    --tx-out-inline-datum-file ../data/reference/reference-datum.json \
     --testnet-magic ${testnet_magic})
 
 IFS=':' read -ra VALUE <<< "${FEE}"

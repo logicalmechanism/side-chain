@@ -101,7 +101,7 @@ FEE=$(${cli} transaction build \
     --spending-tx-in-reference="${script_ref_utxo}#1" \
     --spending-plutus-script-v2 \
     --spending-reference-tx-in-inline-datum-present \
-    --spending-reference-tx-in-redeemer-file ../data/reference/update-cashier-redeemer.json \
+    --spending-reference-tx-in-redeemer-file ../data/reference/update-watchers-redeemer.json \
     --tx-out="${script_address_out}" \
     --tx-out-inline-datum-file ../data/reference/reference-datum.json \
     --required-signer-hash ${starter_pkh} \

@@ -1,28 +1,11 @@
 use aiken/list
-use aiken/transaction.{Input, ScriptContext, Spend, Transaction}
+use aiken/transaction.{ScriptContext, Spend}
 use side_chain/address
 use side_chain/datum.{ReferenceDatum}
 use side_chain/helpers
 use side_chain/reference_redeemer.{
   ReferenceRedeemer, UpdateCashier, UpdateContracts, UpdateFee, UpdateKeepers,
   UpdatePool, UpdateWatchers,
-}
-
-fn cont_validation(tx: Transaction, validating_input: Input) -> Bool {
-  let validating_value =
-    validating_input.output.value
-  let script_addr =
-    validating_input.output.address
-  list.and(
-    [
-      // owner must get the utxo back
-      address.find_token_payout(script_addr, validating_value, tx.outputs),
-      // single script input
-      address.count_script_inputs(tx.inputs, script_addr, 0) == 1,
-      // single script output
-      address.count_script_outputs(tx.outputs, script_addr, 0) == 1,
-    ],
-  )
 }
 
 validator {
@@ -37,6 +20,10 @@ validator {
           context.transaction
         let validating_input =
           helpers.get_validating_input(tx.inputs, output_reference)
+        let validating_value =
+          validating_input.output.value
+        let script_addr =
+          validating_input.output.address
         expect cont_datum: ReferenceDatum =
           helpers.get_outbound_datum(tx, validating_input)
         let datum_cont_check =
@@ -65,10 +52,16 @@ validator {
               )
             // Update the multisig
             UpdateKeepers -> {
-              let keeper_length =
+              let l =
                 list.length(cont_datum.keepers.pkhs)
-              let threshold =
+              let t =
                 cont_datum.keepers.threshold
+              let a =
+                1
+              let b =
+                2
+              let c =
+                1
               list.and(
                 [
                   datum.cashier == cont_datum.cashier,
@@ -76,18 +69,23 @@ validator {
                   datum.watchers == cont_datum.watchers,
                   datum.staking == cont_datum.staking,
                   datum.contracts == cont_datum.contracts,
-                  keeper_length >= threshold,
-                  // more than not
-                  2 * threshold >= 2 + keeper_length,
+                  l >= t,
+                  a * l + b * c <= b * t,
                 ],
               )
             }
             // Update the hotkey
             UpdateWatchers -> {
-              let watcher_length =
+              let l =
                 list.length(cont_datum.watchers.pkhs)
-              let threshold =
+              let t =
                 cont_datum.watchers.threshold
+              let a =
+                3
+              let b =
+                4
+              let c =
+                1
               list.and(
                 [
                   datum.cashier == cont_datum.cashier,
@@ -95,9 +93,8 @@ validator {
                   datum.keepers == cont_datum.keepers,
                   datum.staking == cont_datum.staking,
                   datum.contracts == cont_datum.contracts,
-                  watcher_length >= threshold,
-                  // twice as many as not
-                  2 * ( watcher_length - threshold ) <= threshold,
+                  l >= t,
+                  a * l + b * c <= b * t,
                 ],
               )
             }
@@ -126,8 +123,12 @@ validator {
           }
         list.and(
           [
-            // validating value conts to script addr
-            cont_validation(tx, validating_input),
+            // owner must get the utxo back
+            address.find_token_payout(script_addr, validating_value, tx.outputs),
+            // single script input
+            address.count_script_inputs(tx.inputs, script_addr, 0) == 1,
+            // single script output
+            address.count_script_outputs(tx.outputs, script_addr, 0) == 1,
             // only keepers can update the data
             helpers.valid_multisig(tx, datum.keepers.pkhs, 0) >= datum.keepers.threshold,
             // the cont datum check
