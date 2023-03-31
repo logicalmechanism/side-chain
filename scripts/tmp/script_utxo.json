@@ -1,5 +1,5 @@
 {
-    "7b62f87a3a1222392b1d576aae479b2d5b3393a5b3cc3c44106c75bfccba1513#0": {
+    "21a2c7e00a47889089f33780b6875c83b5b6390f4ffdf661c2b57317087f9b47#0": {
         "address": "addr_test1xpn4rzh3yags7a2cwx0r5z6p7hxys708xtwec3mxtr4chv23jdyxlhur27np9ug3ekwp6wq3rld7dcmp0472zxkvsvzqeknz35",
         "datum": null,
         "inlineDatum": {
@@ -22,7 +22,7 @@
         "referenceScript": null,
         "value": {
             "c34332d539bb554707a2d8826f2057bc628ac433a779c2f43d4a5b5c": {
-                "5468697349734f6e6553746172746572546f6b656e466f7254657374696e6731": 200
+                "5468697349734f6e6553746172746572546f6b656e466f7254657374696e6731": 100
             },
             "lovelace": 1474020
         }

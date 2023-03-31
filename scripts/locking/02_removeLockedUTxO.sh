@@ -30,7 +30,7 @@ keeper3_pkh=$(${cli} address key-hash --payment-verification-key-file ../wallets
 # asset to trade
 policy_id="c34332d539bb554707a2d8826f2057bc628ac433a779c2f43d4a5b5c"
 token_name="5468697349734f6e6553746172746572546f6b656e466f7254657374696e6731"
-asset="200 ${policy_id}.${token_name}"
+asset="100 ${policy_id}.${token_name}"
 
 min_value=$(${cli} transaction calculate-min-required-utxo \
     --babbage-era \
@@ -123,7 +123,7 @@ IFS=' ' read -ra FEE <<< "${VALUE[1]}"
 FEE=${FEE[1]}
 echo -e "\033[1;32m Fee: \033[0m" $FEE
 #
-exit
+# exit
 #
 echo -e "\033[0;36m Signing \033[0m"
 ${cli} transaction sign \
