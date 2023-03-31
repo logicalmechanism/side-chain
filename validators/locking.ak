@@ -40,12 +40,13 @@ validator(starter_pid: ByteArray, starter_tkn: ByteArray, ref_hash_data: Data) {
           Remove -> {
             // owner info
             let owner_addr =
-              credential.from_verification_key(datum.owner.pkh)
-                |> credential.with_delegation_key(datum.owner.sc)
+              address.create_wallet_address(datum.owner.pkh, datum.owner.sc)
             // fee info
             let cashier_addr =
-              credential.from_verification_key(ref_datum.cashier.pkh)
-                |> credential.with_delegation_key(ref_datum.cashier.sc)
+              address.create_wallet_address(
+                ref_datum.cashier.pkh,
+                ref_datum.cashier.sc,
+              )
             let withdraw_fee =
               value.from_lovelace(ref_datum.fees.withdraw_fee)
             list.and(
@@ -53,30 +54,30 @@ validator(starter_pid: ByteArray, starter_tkn: ByteArray, ref_hash_data: Data) {
                 // keepers or watchers must sign it
                 list.or(
                   [
-                    helpers.valid_multisig(tx, ref_datum.keepers.pkhs, 0) >= ref_datum.keepers.threshold,
-                    helpers.valid_multisig(tx, ref_datum.watchers.pkhs, 0) >= ref_datum.watchers.threshold,
+                    (helpers.valid_multisig(tx, ref_datum.keepers.pkhs, 0) >= ref_datum.keepers.threshold)?,
+                    (helpers.valid_multisig(tx, ref_datum.watchers.pkhs, 0) >= ref_datum.watchers.threshold)?,
                   ],
                 ),
                 // owner must sign it
-                helpers.must_be_signed_by(tx, datum.owner.pkh),
+                helpers.must_be_signed_by(tx, datum.owner.pkh)?,
                 // owner must get the utxo back
                 address.find_exact_payout(
                   owner_addr,
                   validating_value,
                   tx.outputs,
-                ),
+                )?,
                 // make sure its the correct reference contract
                 ref_value_check,
                 // single script input
-                address.count_script_inputs(tx.inputs, script_addr, 0) == 1,
+                (address.count_script_inputs(tx.inputs, script_addr, 0) == 1)?,
                 // single script output
-                address.count_script_outputs(tx.outputs, script_addr, 0) == 0,
+                (address.count_script_outputs(tx.outputs, script_addr, 0) == 0)?,
                 // pay the removal service fee
                 address.find_exact_payout(
                   cashier_addr,
                   withdraw_fee,
                   tx.outputs,
-                ),
+                )?,
               ],
             )
           }
@@ -88,12 +89,13 @@ validator(starter_pid: ByteArray, starter_tkn: ByteArray, ref_hash_data: Data) {
               value.add(validating_value, value.negate(outbound_value))
             // owner info
             let owner_addr =
-              credential.from_verification_key(datum.owner.pkh)
-                |> credential.with_delegation_key(datum.owner.sc)
+              address.create_wallet_address(datum.owner.pkh, datum.owner.sc)
             // fee info
             let cashier_addr =
-              credential.from_verification_key(ref_datum.cashier.pkh)
-                |> credential.with_delegation_key(ref_datum.cashier.sc)
+              address.create_wallet_address(
+                ref_datum.cashier.pkh,
+                ref_datum.cashier.sc,
+              )
             let withdraw_fee =
               value.from_lovelace(ref_datum.fees.withdraw_fee)
             expect cont_datum: LockDatum =
@@ -142,8 +144,10 @@ validator(starter_pid: ByteArray, starter_tkn: ByteArray, ref_hash_data: Data) {
               value.add(validating_value, outbound_value)
             // fee info
             let cashier_addr =
-              credential.from_verification_key(ref_datum.cashier.pkh)
-                |> credential.with_delegation_key(ref_datum.cashier.sc)
+              address.create_wallet_address(
+                ref_datum.cashier.pkh,
+                ref_datum.cashier.sc,
+              )
             let deposit_fee =
               value.from_lovelace(ref_datum.fees.deposit_fee)
             expect cont_datum: LockDatum =
@@ -177,8 +181,10 @@ validator(starter_pid: ByteArray, starter_tkn: ByteArray, ref_hash_data: Data) {
           // keeper and watcher update endpoint
           Update { value, flag } -> {
             let bank_addr =
-              credential.from_script(ref_datum.contracts.bank)
-                |> credential.with_delegation_script(ref_datum.contracts.stake)
+              address.create_script_address(
+                ref_datum.contracts.bank,
+                ref_datum.contracts.stake,
+              )
             // The value going back to the contract
             let cont_value =
               if flag.increase == 0 {

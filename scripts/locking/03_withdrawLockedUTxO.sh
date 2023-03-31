@@ -6,18 +6,21 @@ cli=$(cat ../data/path_to_cli.sh)
 testnet_magic=$(cat ../data/testnet.magic)
 
 # staked smart contract address
-script_path="../../contracts/reference_contract.plutus"
-script_address=$(${cli} address build --payment-script-file ${script_path} --testnet-magic ${testnet_magic})
+script_path="../../contracts/locking_contract.plutus"
+stake_path="../../contracts/stake_contract.plutus"
+script_address=$(${cli} address build --payment-script-file ${script_path} --stake-script-file ${stake_path} --testnet-magic ${testnet_magic})
 
 # collat
 collat_address=$(cat ../wallets/collat-wallet/payment.addr)
 collat_pkh=$(${cli} address key-hash --payment-verification-key-file ../wallets/collat-wallet/payment.vkey)
 
 # starter
-starter_address=$(cat ../wallets/starter-wallet/payment.addr)
-starter_pkh=$(${cli} address key-hash --payment-verification-key-file ../wallets/starter-wallet/payment.vkey)
+user_address=$(cat ../wallets/user-wallet/payment.addr)
+user_pkh=$(${cli} address key-hash --payment-verification-key-file ../wallets/user-wallet/payment.vkey)
 
-
+# cashier info
+cashier_address=$(cat ../wallets/cashier-wallet/payment.addr)
+withdraw_fee=$(jq -r '.fields[1].fields[0].int' ../data/reference/reference-datum.json)
 
 # multisig
 keeper1_pkh=$(${cli} address key-hash --payment-verification-key-file ../wallets/keeper1-wallet/payment.vkey)
@@ -25,36 +28,45 @@ keeper2_pkh=$(${cli} address key-hash --payment-verification-key-file ../wallets
 keeper3_pkh=$(${cli} address key-hash --payment-verification-key-file ../wallets/keeper3-wallet/payment.vkey)
 
 # asset to trade
-policy_id=$(jq -r '.starterPid' ../../start_info.json)
-token_name=$(jq -r '.starterTkn' ../../start_info.json)
-asset="1 ${policy_id}.${token_name}"
+policy_id="c34332d539bb554707a2d8826f2057bc628ac433a779c2f43d4a5b5c"
+token_name="5468697349734f6e6553746172746572546f6b656e466f7254657374696e6731"
+asset="100 ${policy_id}.${token_name}"
+
+user_min_value=$(${cli} transaction calculate-min-required-utxo \
+    --babbage-era \
+    --protocol-params-file ../tmp/protocol.json \
+    --tx-out="${user_address} + 5000000 + ${asset}" | tr -dc '0-9')
 
 min_value=$(${cli} transaction calculate-min-required-utxo \
     --babbage-era \
     --protocol-params-file ../tmp/protocol.json \
-    --tx-out-inline-datum-file ../data/reference/reference-datum.json \
+    --tx-out-inline-datum-file ../data/locking/locking-datum.json \
     --tx-out="${script_address} + 5000000 + ${asset}" | tr -dc '0-9')
 
 script_address_out="${script_address} + ${min_value} + ${asset}"
+user_address_out="${user_address} + ${user_min_value} + ${asset}"
+fee_address_out="${cashier_address} + ${withdraw_fee}"
 echo "Script OUTPUT: "${script_address_out}
+echo "User OUTPUT: "${user_address_out}
+echo "Fee OUTPUT: "${fee_address_out}
 #
 # exit
 #
-# get deleg utxo
+# get user utxo
 echo -e "\033[0;36m Gathering UTxO Information  \033[0m"
 ${cli} query utxo \
     --testnet-magic ${testnet_magic} \
-    --address ${starter_address} \
-    --out-file ../tmp/starter_utxo.json
+    --address ${user_address} \
+    --out-file ../tmp/user_utxo.json
 
-TXNS=$(jq length ../tmp/starter_utxo.json)
+TXNS=$(jq length ../tmp/user_utxo.json)
 if [ "${TXNS}" -eq "0" ]; then
-   echo -e "\n \033[0;31m NO UTxOs Found At ${starter_address} \033[0m \n";
+   echo -e "\n \033[0;31m NO UTxOs Found At ${user_address} \033[0m \n";
    exit;
 fi
 alltxin=""
-TXIN=$(jq -r --arg alltxin "" 'keys[] | . + $alltxin + " --tx-in"' ../tmp/starter_utxo.json)
-starter_tx_in=${TXIN::-8}
+TXIN=$(jq -r --arg alltxin "" 'keys[] | . + $alltxin + " --tx-in"' ../tmp/user_utxo.json)
+user_tx_in=${TXIN::-8}
 
 # get script utxo
 echo -e "\033[0;36m Gathering Script UTxO Information  \033[0m"
@@ -68,7 +80,7 @@ if [ "${TXNS}" -eq "0" ]; then
    exit;
 fi
 alltxin=""
-TXIN=$(jq -r --arg alltxin "" --arg policy_id "$policy_id" --arg token_name "$token_name" 'to_entries[] | select(.value.value[$policy_id][$token_name] == 1) | .key | . + $alltxin + " --tx-in"' ../tmp/script_utxo.json)
+TXIN=$(jq -r --arg alltxin "" --arg user_pkh "${user_pkh}" 'to_entries[] | select(.value.inlineDatum.fields[0].fields[0].bytes == $user_pkh) | .key | . + $alltxin + " --tx-in"' ../tmp/script_utxo.json)
 script_tx_in=${TXIN::-8}
 
 # collat info
@@ -86,24 +98,29 @@ fi
 collat_tx_in=$(jq -r 'keys[0]' ../tmp/collat_utxo.json)
 
 # script reference utxo
-script_ref_utxo=$(${cli} transaction txid --tx-file ../tmp/data-reference-utxo.signed )
+script_ref_utxo=$(${cli} transaction txid --tx-file ../tmp/locking-reference-utxo.signed )
+data_ref_utxo=$(${cli} transaction txid --tx-file ../tmp/referenceable-tx.signed )
+
 
 echo -e "\033[0;36m Building Tx \033[0m"
 FEE=$(${cli} transaction build \
     --babbage-era \
     --protocol-params-file ../tmp/protocol.json \
     --out-file ../tmp/tx.draft \
-    --change-address ${starter_address} \
+    --change-address ${user_address} \
     --tx-in-collateral ${collat_tx_in} \
-    --tx-in ${starter_tx_in} \
+    --tx-in ${user_tx_in} \
+    --read-only-tx-in-reference="${data_ref_utxo}#0" \
     --tx-in ${script_tx_in} \
     --spending-tx-in-reference="${script_ref_utxo}#1" \
     --spending-plutus-script-v2 \
     --spending-reference-tx-in-inline-datum-present \
-    --spending-reference-tx-in-redeemer-file ../data/reference/update-contracts-redeemer.json \
+    --spending-reference-tx-in-redeemer-file ../data/locking/withdraw-redeemer.json \
     --tx-out="${script_address_out}" \
-    --tx-out-inline-datum-file ../data/reference/reference-datum.json \
-    --required-signer-hash ${starter_pkh} \
+    --tx-out-inline-datum-file ../data/locking/locking-datum.json \
+    --tx-out="${user_address_out}" \
+    --tx-out="${fee_address_out}" \
+    --required-signer-hash ${user_pkh} \
     --required-signer-hash ${collat_pkh} \
     --required-signer-hash ${keeper1_pkh} \
     --required-signer-hash ${keeper2_pkh} \
@@ -119,13 +136,13 @@ echo -e "\033[1;32m Fee: \033[0m" $FEE
 #
 echo -e "\033[0;36m Signing \033[0m"
 ${cli} transaction sign \
-    --signing-key-file ../wallets/starter-wallet/payment.skey \
+    --signing-key-file ../wallets/user-wallet/payment.skey \
     --signing-key-file ../wallets/collat-wallet/payment.skey \
     --signing-key-file ../wallets/keeper1-wallet/payment.skey \
     --signing-key-file ../wallets/keeper2-wallet/payment.skey \
     --signing-key-file ../wallets/keeper3-wallet/payment.skey \
     --tx-body-file ../tmp/tx.draft \
-    --out-file ../tmp/referenceable-tx.signed \
+    --out-file ../tmp/tx.signed \
     --testnet-magic ${testnet_magic}
 #
 # exit
@@ -133,5 +150,5 @@ ${cli} transaction sign \
 echo -e "\033[0;36m Submitting \033[0m"
 ${cli} transaction submit \
     --testnet-magic ${testnet_magic} \
-    --tx-file ../tmp/referenceable-tx.signed
+    --tx-file ../tmp/tx.signed
 

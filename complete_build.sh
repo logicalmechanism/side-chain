@@ -11,7 +11,7 @@ function cat_file_or_empty() {
 
 # build out the entire script
 echo -e "\033[1;34m Building Contracts \033[0m"
-aiken build
+aiken build -k
 
 # start with data reference
 echo -e "\033[1;33m Convert Reference Contract \033[0m"
@@ -80,7 +80,7 @@ pkh1=$(cat_file_or_empty ./scripts/wallets/keeper1-wallet/payment.hash)
 pkh2=$(cat_file_or_empty ./scripts/wallets/keeper2-wallet/payment.hash)
 pkh3=$(cat_file_or_empty ./scripts/wallets/keeper3-wallet/payment.hash)
 pkhs="[{\"bytes\": \"$pkh1\"}, {\"bytes\": \"$pkh2\"}, {\"bytes\": \"$pkh3\"}]"
-thres=2
+thres=3
 # pool stuff
 rewardPkh=$(cat_file_or_empty ./scripts/wallets/reward-wallet/payment.hash)
 rewardSc=$(cat_file_or_empty ./scripts/wallets/reward-wallet/stake.hash)
